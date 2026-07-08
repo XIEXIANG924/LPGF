@@ -1,23 +1,23 @@
-# LPGF: Location Prior Generation Framework
+# LPGF: Quality-Gated Open Geospatial Data Fusion for Reusable 3D Urban Location Priors
 
-A multi-source data fusion pipeline for generating 3D building height priors in low-altitude urban airspace. Integrates Sentinel-2 satellite imagery, UAV telemetry, vehicle GPS trajectories, and OpenStreetMap footprints.
+A quality-gated open geospatial data fusion pipeline for generating reusable 3D urban location priors from incomplete urban data. LPGF integrates OpenStreetMap building footprints, satellite imagery, local telemetry, and vehicle GPS trajectories to produce footprint-level height estimates, uncertainty bounds, semantic classes, and provenance metadata.
 
-> **Paper**: "Location Prior Generation Framework: A Multi-Source Data Fusion Pipeline for Low-Altitude Urban Air Mobility"  
-> **Dataset**: MiTra A50 (Milan, Italy) — [doi:10.1038/s41597-025-05472-0](https://doi.org/10.1038/s41597-025-05472-0)
+> **Paper**: "Quality-Gated Open Geospatial Data Fusion for Reusable 3D Urban Location Priors"  
+> **Dataset**: MiTra A50 (Milan, Italy) -- [doi:10.1038/s41597-025-05472-0](https://doi.org/10.1038/s41597-025-05472-0)
 
 ## Pipeline Overview
 
-1. **Region Delimitation** — 800m radius around UAV hover point
-2. **GIS Skeleton** — OSM building footprints + SVD-extracted lane centerlines from GPS
-3. **Height Inference** — Structured 3-tier fallback + optional shadow-based estimation (SHEM)
-4. **Prior Assembly** — Buildings with height, confidence, semantics, occlusion flags
-5. **Export** — LPSP-v0 JSON format
+1. **Region Delimitation** -- fixed local urban context window
+2. **GIS Skeleton** -- OSM building footprints + road-network context from GPS traces
+3. **Height Inference** -- structured 3-tier fallback + optional shadow-based estimation (SHEM)
+4. **Prior Assembly** -- buildings with height, confidence, semantics, uncertainty, and provenance
+5. **Export** -- LPSP-v0 JSON format
 
 ## Quick Start
 
 ```bash
 pip install -r requirements.txt
-python pipeline.py --data-root /path/to/mitra_a50/
+python pipeline.py --buffer-m 800
 ```
 
 Output: `lpsp_v0_prior.json` + 3D visualization + summary report.

@@ -221,9 +221,9 @@ POI_STYLE = {
 DEFAULT_STYLE = {"color": "#BDC3C7", "label": "Unknown", "marker_g": "s", "marker_t": "^"}
 
 UAV_PHASE_STYLE = {
-    "takeoff": {"color": "#00FF88", "label": "UAV Takeoff", "lw": 2.5},
-    "hover": {"color": "#00BFFF", "label": "UAV Hover", "lw": 3.0},
-    "landing": {"color": "#FF8C00", "label": "UAV Landing", "lw": 2.5},
+    "takeoff": {"color": "#00FF88", "label": "Telemetry takeoff", "lw": 2.5},
+    "hover": {"color": "#00BFFF", "label": "Telemetry hover", "lw": 3.0},
+    "landing": {"color": "#FF8C00", "label": "Telemetry landing", "lw": 2.5},
 }
 
 PIXEL_M = 10.0  # Default: Sentinel-2 GSD. Overridden per-image via _read_tiff_geotag().
@@ -1264,7 +1264,7 @@ def write_summary_report(
     summary = artifacts.prior_map.summary()
 
     lines = [
-        "Integrated Location Prior Summary",
+        "Reusable 3D Urban Prior Summary",
         "=" * 72,
         "",
         f"Acquisition time:  {artifacts.tile_meta.acquisition_time}",
@@ -1286,8 +1286,8 @@ def write_summary_report(
         f"Road lanes:        {lane_count}",
         f"Vehicles:          {vehicle_count}",
         f"Vehicle rows:      {len(vehicle_df):,}",
-        f"UAV frames:        {len(artifacts.uav_df):,}",
-        f"UAV phases:        {phase_counts}",
+        f"Telemetry frames:  {len(artifacts.uav_df):,}",
+        f"Telemetry phases:  {phase_counts}",
         "",
         f"Prior summary:     {summary}",
         "",
@@ -1398,7 +1398,7 @@ def render_3d_scene(
             linewidths=0.5,
         )
         axis.plot([hover_e, hover_e], [hover_n, hover_n], [0, hover_z], color="cyan", linewidth=0.8, linestyle=":", alpha=0.30)
-        legend_handles.append(mpatches.Patch(color="cyan", label=f"UAV hover center ({hover_z:.0f}m)"))
+        legend_handles.append(mpatches.Patch(color="cyan", label=f"Local observation center ({hover_z:.0f}m)"))
 
     axis.set_xlabel("East (m)", color="#8899BB", labelpad=12, fontsize=10)
     axis.set_ylabel("North (m)", color="#8899BB", labelpad=12, fontsize=10)
@@ -1424,17 +1424,17 @@ def render_3d_scene(
     legend.get_title().set_color("#AABBCC")
 
     title = (
-        "MiTra A50 Milan - Integrated Location Prior 3D Scene\n"
+        "MiTra A50 Milan - Reusable 3D Urban Prior Scene\n"
         f"Buildings={len(buildings_df)} | Height={buildings_df['height_m'].min():.1f}-{buildings_df['height_m'].max():.1f} m | "
-        f"UAV frames={len(uav_df):,} | Vehicle rows={len(vehicle_df):,}"
+        f"Telemetry frames={len(uav_df):,} | Vehicle rows={len(vehicle_df):,}"
     )
     axis.set_title(title, color="white", fontsize=10, pad=14)
 
     note = (
         f"ENU origin: ({origin_e:.1f}, {origin_n:.1f})\n"
-        "Coordinate basis: UAV hover center\n"
+        "Coordinate basis: local telemetry-derived center\n"
         "Building source: shadow + calibrated fallback\n"
-        "Road source: vehicle lane trajectories"
+        "Road context: vehicle GPS trajectories"
     )
     fig.text(
         0.73,
@@ -1579,7 +1579,7 @@ def _render_enu_topology(building_priors, road_priors, origin_e, origin_n, radiu
         ax.plot(xs, ys, color=lane_colors[idx % 10], linewidth=1.5, alpha=0.7,
                 label="A50 Highway" if idx == 0 else None)
     ax.scatter([0], [0], c="cyan", s=300, marker="*", zorder=10, edgecolors="white", linewidths=0.5,
-               label="UAV hover center")
+               label="Local observation center")
     handles = []
     for sem, style in POI_STYLE.items():
         if any(b.semantic_type == sem for b in building_priors):
@@ -1638,8 +1638,8 @@ def _render_height_statistics(buildings_df, output_dir):
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Integrated location prior generation system (v4).")
-    parser.add_argument("--buffer-m", type=float, default=800.0, help="ROI radius around UAV hover center in meters.")
+    parser = argparse.ArgumentParser(description="Quality-gated urban location prior generation pipeline.")
+    parser.add_argument("--buffer-m", type=float, default=800.0, help="ROI radius around local observation center in meters.")
     parser.add_argument("--skip-3d", action="store_true", help="Skip 3D rendering.")
     args = parser.parse_args()
 
